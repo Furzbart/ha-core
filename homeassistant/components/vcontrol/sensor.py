@@ -2,22 +2,29 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import callback
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, SENSORS
+from .const import DOMAIN, UNIQUE_ID
+from .coordinator import HeatPumpDataCoordinator
 
 
 def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up VControl sensors."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    sensors = [VControlSensor(coordinator, sensor_key) for sensor_key in SENSORS]
+    sensor_collection = hass.data[DOMAIN]["sensors"]
+
+    sensors = [
+        VControlSensor(
+            coordinator=coordinator,
+            key=sensor_key,
+            name=sensor_collection[sensor_key]["name"],
+            type=sensor_collection[sensor_key].get("measurement", None),
+            unit=sensor_collection[sensor_key].get("unit", None),
+        )
+        for sensor_key in sensor_collection
+    ]
 
     async_add_entities(sensors, update_before_add=True)
 
@@ -26,14 +33,19 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
     """vcontrol Sensor representation."""
 
     def __init__(
-        self, coordinator: DataUpdateCoordinator[dict[str, Any]], sensor_key
+        self,
+        coordinator: HeatPumpDataCoordinator,
+        key,
+        type,
+        name,
+        unit,
     ) -> None:
         """Stfu about docstring pls."""
         super().__init__(coordinator)
-        self._sensor_key = sensor_key
-        self._type = SENSORS[sensor_key]["type"]
-        self._name = SENSORS[sensor_key]["name"]
-        self._unit = SENSORS[sensor_key]["unit"]
+        self._sensor_key = key
+        self._name = name
+        self._type = type
+        self._unit = unit
 
     @property
     def name(self):
@@ -49,6 +61,16 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
     def unit_of_measurement(self):
         """Unit."""
         return self._unit
+
+    @property
+    def device_info(self):
+        """Device info."""
+        return {
+            "identifiers": {(DOMAIN, UNIQUE_ID)},
+            "name": "V200-A",
+            "model": "Vitocal 200-A",
+            "manufacturer": "Viessmann",
+        }
 
     @callback
     def _handle_coordinator_update(self) -> None:

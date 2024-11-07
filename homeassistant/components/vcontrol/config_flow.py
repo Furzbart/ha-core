@@ -9,7 +9,7 @@ import aiohttp
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_HOST
+from homeassistant.const import CONF_HOST, CONF_PATH, CONF_PORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
@@ -19,7 +19,11 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_HOST): str,
+        vol.Required(
+            CONF_HOST, description={"suggested_value": "http://127.0.0.1"}
+        ): str,
+        vol.Optional(CONF_PORT, default="5000"): str,
+        vol.Required(CONF_PATH, default="/api/vcontrol"): str,
     }
 )
 
@@ -29,9 +33,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    dings = data.get(CONF_HOST)
-    baseUrl = "/api/vcontrol/status"
-    requestUrl = f"{dings}{baseUrl}"
+    _host = data.get(CONF_HOST)
+    _port = data.get(CONF_PORT)
+    baseUrl = "/api/vcontrol"
+    requestUrl = f"{_host}:{_port}{baseUrl}/status"
     success = await getStatus(requestUrl)
 
     if not success:
@@ -65,6 +70,7 @@ class VControlConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
+
         if user_input is not None:
             try:
                 info = await validate_input(self.hass, user_input)
