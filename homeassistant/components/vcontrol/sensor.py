@@ -10,7 +10,7 @@ from .const import DOMAIN, UNIQUE_ID
 from .coordinator import HeatPumpDataCoordinator
 
 
-def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up VControl sensors."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     sensor_collection = hass.data[DOMAIN]["sensors"]
@@ -26,7 +26,7 @@ def async_setup_entry(hass, config_entry, async_add_entities):
         for sensor_key in sensor_collection
     ]
 
-    async_add_entities(sensors, update_before_add=True)
+    await async_add_entities(sensors, update_before_add=True)
 
 
 class VControlSensor(CoordinatorEntity, SensorEntity):
@@ -46,6 +46,8 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
         self._name = name
         self._type = type
         self._unit = unit
+        self._device_id = UNIQUE_ID
+        self._unique_id = f"{UNIQUE_ID}_{key}"
 
     @property
     def name(self):
@@ -71,6 +73,11 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
             "model": "Vitocal 200-A",
             "manufacturer": "Viessmann",
         }
+
+    @property
+    def unique_id(self):
+        """Unique id."""
+        return self._unique_id
 
     @callback
     def _handle_coordinator_update(self) -> None:
