@@ -3,14 +3,21 @@
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.core import callback
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, UNIQUE_ID
 from .coordinator import HeatPumpDataCoordinator
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Set up VControl sensors."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     sensor_collection = hass.data[DOMAIN]["sensors"]
@@ -25,8 +32,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
         for sensor_key in sensor_collection
     ]
-
-    await async_add_entities(sensors, update_before_add=True)
+    await async_add_entities(sensors, update_before_add=True)  # type:ignore[func-returns-value]
 
 
 class VControlSensor(CoordinatorEntity, SensorEntity):
@@ -50,7 +56,7 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
         self._unique_id = f"{UNIQUE_ID}_{key}"
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The friggin name."""
         return self._name
 
@@ -65,7 +71,7 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
         return self._unit
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Device info."""
         return {
             "identifiers": {(DOMAIN, UNIQUE_ID)},
@@ -75,7 +81,7 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
         }
 
     @property
-    def unique_id(self):
+    def unique_id(self) -> str:
         """Unique id."""
         return self._unique_id
 

@@ -4,6 +4,7 @@ import logging
 
 import requests
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 _LOGGER = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 class VControlAPI:
     """Handles connection and updates from/to vcontrol API."""
 
-    def __init__(self, host, port="5000", base_url="/api/vcontrol"):
+    def __init__(self, host, port="5000", base_url="/api/vcontrol") -> None:
         """Useless docstring."""
         self._base_url = base_url
         self._host = host
@@ -40,7 +41,7 @@ class VControlAPI:
             _LOGGER.log(level=20, msg="Connection to vcontrol API timed out!")
             return None
 
-    async def async_get_available_sensors(self, hass):
+    async def async_get_available_sensors(self, hass: HomeAssistant):
         """Get all available sensors from vcontrol API."""
 
         session = async_get_clientsession(hass)
