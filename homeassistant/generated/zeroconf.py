@@ -92,6 +92,10 @@ HOMEKIT = {
         "always_discover": True,
         "domain": "lifx",
     },
+    "LIFX Colour": {
+        "always_discover": True,
+        "domain": "lifx",
+    },
     "LIFX DLCOL": {
         "always_discover": True,
         "domain": "lifx",
@@ -140,6 +144,10 @@ HOMEKIT = {
         "always_discover": True,
         "domain": "lifx",
     },
+    "LIFX Permanent Outdoor": {
+        "always_discover": True,
+        "domain": "lifx",
+    },
     "LIFX Pls": {
         "always_discover": True,
         "domain": "lifx",
@@ -161,6 +169,10 @@ HOMEKIT = {
         "domain": "lifx",
     },
     "LIFX Tile": {
+        "always_discover": True,
+        "domain": "lifx",
+    },
+    "LIFX Tube": {
         "always_discover": True,
         "domain": "lifx",
     },
@@ -547,6 +559,10 @@ ZEROCONF = {
             },
         },
         {
+            "domain": "peblar",
+            "name": "pblr-*",
+        },
+        {
             "domain": "powerfox",
             "name": "powerfox*",
         },
@@ -757,6 +773,11 @@ ZEROCONF = {
             "properties": {
                 "am": "airport*",
             },
+        },
+    ],
+    "_rio._tcp.local.": [
+        {
+            "domain": "russound_rio",
         },
     ],
     "_sideplay._tcp.local.": [
