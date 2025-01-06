@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -12,6 +14,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, UNIQUE_ID
 from .coordinator import HeatPumpDataCoordinator
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -20,7 +24,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up VControl sensors."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    sensor_collection = hass.data[DOMAIN]["sensors"]
+    sensor_collection = hass.data[DOMAIN].get("sensors", {})
 
     sensors = [
         VControlSensor(
@@ -32,7 +36,10 @@ async def async_setup_entry(
         )
         for sensor_key in sensor_collection
     ]
-    await async_add_entities(sensors, update_before_add=True)  # type:ignore[func-returns-value]
+
+    for sensor in sensors:
+        _LOGGER.debug("Adding sensor: %s", sensor.name)
+    await async_add_entities(sensors, update_before_add=True)  # type: ignore[func-returns-value]
 
 
 class VControlSensor(CoordinatorEntity, SensorEntity):
@@ -41,34 +48,24 @@ class VControlSensor(CoordinatorEntity, SensorEntity):
     def __init__(
         self,
         coordinator: HeatPumpDataCoordinator,
-        key,
-        type,
-        name,
-        unit,
+        key: str,
+        type: str | None,
+        name: str,
+        unit: str | None,
     ) -> None:
-        """Stfu about docstring pls."""
+        """VControl sensor constructor."""
         super().__init__(coordinator)
         self._sensor_key = key
         self._name = name
         self._type = type
-        self._unit = unit
+        self.native_unit_of_measurement = unit
         self._device_id = UNIQUE_ID
         self._unique_id = f"{UNIQUE_ID}_{key}"
 
     @property
     def name(self) -> str:
-        """The friggin name."""
+        """Sensor name."""
         return self._name
-
-    @property
-    def state(self):
-        """Sensor State."""
-        return self.coordinator.data.get(self._sensor_key)
-
-    @property
-    def unit_of_measurement(self):
-        """Unit."""
-        return self._unit
 
     @property
     def device_info(self) -> DeviceInfo:

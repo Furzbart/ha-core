@@ -30,7 +30,12 @@ class VControlAPI:
                 f"{self._host}:{self._port}{self._base_url}/commands/all", timeout=15
             )
             res.raise_for_status()
-            return res.json()
+
+            data = res.json()
+
+            for obj in data:
+                if "name" in obj and isinstance(obj["name"], str):
+                    obj["name"] = f"vcontrol_{obj['name']}"
         except requests.HTTPError:
             _LOGGER.log(
                 level=20,
@@ -40,6 +45,9 @@ class VControlAPI:
         except requests.exceptions.Timeout:
             _LOGGER.log(level=20, msg="Connection to vcontrol API timed out!")
             return None
+        else:
+            _LOGGER.log(level=20, msg="Successfully fetched API update.")
+            return data
 
     async def async_get_available_sensors(self, hass: HomeAssistant):
         """Get all available sensors from vcontrol API."""
